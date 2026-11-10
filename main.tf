@@ -3,7 +3,7 @@ resource "azurerm_resource_group" "first" {
     location = var.location
 
     tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
 
@@ -16,16 +16,39 @@ resource "azurerm_virtual_network" "first" {
   address_space       = ["10.0.0.0/16"]
 
   tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
+
 }
 
 resource "azurerm_subnet" "first" {
   name                 = "snet-first"
   resource_group_name  = azurerm_resource_group.first.name
   virtual_network_name = azurerm_virtual_network.first.name
-  address_prefixes     = ["10.0.0.0/24"]
+  address_prefixes     = ["10.0.0.0/24"]   
+}
+
+
+resource "azurerm_subnet" "second" {
+  name                 = "snet-second"
+  resource_group_name  = azurerm_resource_group.first.name
+  virtual_network_name = azurerm_virtual_network.first.name
+  address_prefixes     = ["10.0.1.0/24"]   
+}
+
+resource "azurerm_subnet" "third" {
+  name                 = "snet-third"
+  resource_group_name  = azurerm_resource_group.first.name
+  virtual_network_name = azurerm_virtual_network.first.name
+  address_prefixes     = ["10.0.2.0/24"]   
+}
+
+resource "azurerm_subnet" "fourth" {
+  name                 = "snet-fourth"
+  resource_group_name  = azurerm_resource_group.first.name
+  virtual_network_name = azurerm_virtual_network.first.name
+  address_prefixes     = ["10.0.3.0/24"]   
 }
 
 resource "azurerm_network_security_group" "first" {
@@ -46,7 +69,7 @@ resource "azurerm_network_security_group" "first" {
   }
 
   tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
 }
@@ -67,7 +90,7 @@ resource "azurerm_public_ip" "first" {
   allocation_method   = "Static"
 
   tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
 }
@@ -85,7 +108,7 @@ resource "azurerm_network_interface" "first" {
   }
 
   tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
 }
@@ -134,8 +157,34 @@ resource "azurerm_linux_virtual_machine" "first" {
   }
 
   tags = {
-    Environment = "develop"
+    Environment = "Dev"
     Service = "2p"
   }
 }
 
+resource "azurerm_consumption_budget_resource_group" "monthly_budget" {
+  name              = "monthly_budget"
+  resource_group_id = azurerm_resource_group.first.id
+
+  amount     = 10
+  time_grain = "Monthly"
+
+  time_period {
+    start_date = "2026-11-01T00:00:00Z"
+    end_date   = "2026-11-30T00:00:00Z"
+  }
+
+  notification {
+    enabled        = true
+    threshold      = 80.0
+    operator       = "EqualTo"
+    threshold_type = "Actual"
+
+    contact_emails = [
+      "foo@gmail.com",
+      "bar@gmail.com",
+    ]
+
+  }
+
+}
